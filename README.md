@@ -6,13 +6,13 @@ Documents de référence :
 - `brief-projet-overlay-3d-pax-historia-v2.md` — brief et plan de travail courant
 - `donnees-investigation-phase0.md` — toutes les données techniques (schémas, API du moteur de carte, pièges)
 
-## À propos de ce projet
+## À propos
 
-**Le code de cette extension a été écrit par [Claude Code](https://claude.com/claude-code)**, l'agent de développement en ligne de commande d'Anthropic. J'ai dirigé le projet — cahier des charges, choix de conception, sélection et fourniture des modèles 3D, tests en jeu et diagnostic des pannes — mais l'investigation du moteur de carte, l'architecture et l'implémentation sont son travail, pas le mien.
+J'ai fait ça avec [Claude Code](https://claude.com/claude-code) : c'est lui qui a écrit tout le code, moi j'ai surtout dit ce que je voulais, testé en jeu et signalé quand ça n'allait pas — genre quand les usines ressemblaient à des granges.
 
-**Pourquoi je le publie ?** Le système d'icônes s'est révélé utile au-delà du simple habillage 3D. Sur une partie avancée, la carte de Pax Historia accumule les « éléments de carte » : leurs symboles et leurs libellés finissent par se superposer au point de devenir illisibles — j'ai vu jusqu'à une vingtaine d'entités dans une seule région. En remplaçant ces symboles par des pastilles typées, l'overlay désencombre la carte et rend chaque élément identifiable d'un coup d'œil. C'est cette lisibilité retrouvée qui m'a donné envie de le mettre en ligne, au cas où ça servirait à d'autres joueurs.
+Je le partage parce que je trouve que ça rend bien. Et surtout parce que sur une partie un peu avancée, la carte devient vite illisible : les symboles et les noms des « éléments de carte » se superposent, j'en ai eu une vingtaine empilés dans une seule région. Avec les pastilles, on voit enfin ce qu'il y a et où. Si ça peut servir à d'autres, tant mieux.
 
-Projet **non officiel**, sans aucune affiliation avec Pax Historia.
+Projet non officiel, aucun lien avec Pax Historia.
 
 ## Installation (mode développeur)
 
