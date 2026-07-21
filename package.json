@@ -1,0 +1,23 @@
+{
+  "name": "pax-historia-overlay-3d",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Overlay 3D low-poly, purement visuel et local, pour Pax Historia (extension Chrome MV3, lecture seule).",
+  "scripts": {
+    "build": "node build.mjs",
+    "watch": "node build.mjs --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@gltf-transform/cli": "^4.4.1",
+    "@types/chrome": "^0.0.280",
+    "@types/three": "^0.185.1",
+    "esbuild": "^0.25.0",
+    "obj2gltf": "^3.2.0",
+    "typescript": "^5.6.0"
+  },
+  "dependencies": {
+    "three": "^0.185.1"
+  }
+}

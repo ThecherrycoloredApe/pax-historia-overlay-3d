@@ -1,0 +1,43 @@
+{
+  "manifest_version": 3,
+  "name": "Pax Historia — Overlay 3D",
+  "version": "0.1.0",
+  "description": "Overlay 3D low-poly purement visuel et local pour Pax Historia. Lecture seule : ne modifie rien au jeu.",
+  "permissions": ["storage"],
+  "host_permissions": [
+    "https://www.paxhistoria.co/*",
+    "https://paxhistoria.co/*",
+    "https://beta.paxhistoria.co/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Pax Historia — Overlay 3D"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.paxhistoria.co/*",
+        "https://paxhistoria.co/*",
+        "https://beta.paxhistoria.co/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_start",
+      "all_frames": true,
+      "match_about_blank": true,
+      "match_origin_as_fallback": true
+    },
+    {
+      "matches": [
+        "https://www.paxhistoria.co/*",
+        "https://paxhistoria.co/*",
+        "https://beta.paxhistoria.co/*"
+      ],
+      "js": ["page-inject.js"],
+      "run_at": "document_start",
+      "all_frames": true,
+      "match_about_blank": true,
+      "match_origin_as_fallback": true,
+      "world": "MAIN"
+    }
+  ]
+}

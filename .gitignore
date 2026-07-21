@@ -1,0 +1,14 @@
+node_modules/
+dist/
+*.log
+
+# Sources d'assets : ~460 Mo de zips, inutiles au build (les .glb retenus sont
+# déjà dans src/render3d/assets/).
+# ⚠️ assets-source/ contient en outre 4 modèles Sketchfab en CC BY dont l'auteur
+# n'est pas renseigné : les publier violerait l'obligation d'attribution.
+assets-src/
+assets-source/
+
+# Kits extraits pour les planches de contact (tools/preview-server.mjs) :
+# dérivés des zips ci-dessus, régénérables à volonté.
+preview/kit/
