@@ -50,9 +50,15 @@ import containerCGlb from './assets/kenney-container-c.glb';
 import obeliskGlb from './assets/kenney-obelisk.glb';
 import columnGlb from './assets/kenney-column.glb';
 import pineGlb from './assets/kenney-pine.glb';
+// Kenney — City Kit (Suburban) : l'enceinte de la base militaire. `fence-3x3`
+// est un périmètre carré complet en UN seul modèle (35 Ko) — c'est le mur qui
+// rend une base identifiable au premier coup d'œil, comme l'a montré l'essai
+// du modèle Sketchfab (abandonné, 1 Mo pour le même effet).
+import fenceCompoundGlb from './assets/kenney-fence-compound.glb';
 import colormapIndustrial from './assets/colormap-industrial.png';
 import colormapWatercraft from './assets/colormap-watercraft.png';
 import colormapGraveyard from './assets/colormap-graveyard.png';
+import colormapSuburban from './assets/colormap-suburban.png';
 
 // Quaternius — Ultimate Buildings Pack : bâtiments urbains.
 import bld1Glb from './assets/quaternius-bld-1story.glb';
@@ -69,7 +75,7 @@ import bld2CenterGlb from './assets/quaternius-bld-2story-center.glb';
 import bld2DoubleGlb from './assets/quaternius-bld-2story-double.glb';
 import bld2WideGlb from './assets/quaternius-bld-2story-wide.glb';
 
-type Kit = 'industrial' | 'watercraft' | 'graveyard' | 'quaternius';
+type Kit = 'industrial' | 'watercraft' | 'graveyard' | 'suburban' | 'quaternius';
 
 /**
  * Nombre de variantes par type, réparties par hash du seed. Un type absent
@@ -99,6 +105,8 @@ const KENNEY_MID = 0x8f959d;
 const KENNEY_DARK = 0x5d646e;
 /** Le jaune Kenney, à doser : accent sur UN matériau, jamais dominant. */
 const KENNEY_SAND = 0xe0b063;
+/** Vert-de-gris militaire — sert à l'enceinte de la base. */
+const OLIVE = 0x5e6552;
 
 /**
  * Rampes du plus SOMBRE au plus CLAIR. Chaque bâtiment porte plusieurs
@@ -155,6 +163,7 @@ const ASSET_TYPES = new Set<StructureType>([
   'port',
   'monument',
   'generic',
+  'military_base',
 ]);
 
 const templates = new Map<string, THREE.Group>();
@@ -283,6 +292,38 @@ function repaint(src: THREE.Group, paint: Paint, mix: number): THREE.Group {
   return copy;
 }
 
+/**
+ * Copie d'un template repeinte en APLAT : texture retirée, couleur imposée.
+ *
+ * Nécessaire quand un modèle vient d'un kit dont la palette jure. Teinter par
+ * multiplication (`repaint`) ne suffit pas dans ce cas : la couleur du matériau
+ * MULTIPLIE la texture, donc une palissade orange vire au brun foncé et jamais
+ * au vert-de-gris. Retirer la map donne un aplat propre — acceptable sur une
+ * géométrie simple, à éviter sur un bâtiment dont la texture porte le détail.
+ */
+function solidColor(src: THREE.Group, color: number): THREE.Group {
+  const copy = src.clone(true) as THREE.Group;
+  const cache = new Map<THREE.Material, THREE.Material>();
+  const flatten = (m: THREE.Material): THREE.Material => {
+    const hit = cache.get(m);
+    if (hit) return hit;
+    const c = m.clone() as THREE.MeshStandardMaterial;
+    c.map = null;
+    if (c.color) c.color.set(color);
+    c.needsUpdate = true; // sans ça le shader garde la texture
+    cache.set(m, c);
+    return c;
+  };
+  copy.traverse((child) => {
+    const mesh = child as THREE.Mesh;
+    if (!mesh.isMesh || !mesh.material) return;
+    const swapped = materialsOf(mesh).map(flatten);
+    mesh.material = Array.isArray(mesh.material) ? swapped : swapped[0]!;
+  });
+  markShared(copy);
+  return copy;
+}
+
 type Part = { key: string; scale: number; at: readonly [number, number, number] };
 
 /**
@@ -311,6 +352,7 @@ async function buildTemplates(): Promise<void> {
     industrial: loaderFor(colormapIndustrial),
     watercraft: loaderFor(colormapWatercraft),
     graveyard: loaderFor(colormapGraveyard),
+    suburban: loaderFor(colormapSuburban),
     quaternius: new GLTFLoader(),
   };
   const load = async (key: string, kit: Kit, bytes: Uint8Array) => {
@@ -357,6 +399,7 @@ async function buildTemplates(): Promise<void> {
     load('obelisk', 'graveyard', obeliskGlb),
     load('column', 'graveyard', columnGlb),
     load('pine', 'graveyard', pineGlb),
+    load('fence-compound', 'suburban', fenceCompoundGlb),
   ]);
 
   const failed = results.filter((r) => r.status === 'rejected');
@@ -377,6 +420,22 @@ async function buildTemplates(): Promise<void> {
     const tpl = templates.get(`generic-${v}`);
     if (tpl) templates.set(`generic-${v}`, repaint(tpl, paint, TINT_MIX));
   });
+
+  // L'enceinte sort du kit PAVILLONNAIRE : c'est une palissade en bois orange,
+  // qui faisait jardin de banlieue au milieu d'une carte grise. Teinte uniforme
+  // vers le vert-de-gris (rampe d'une seule couleur) pour qu'elle lise
+  // « militaire » et s'accorde au reste.
+  const fence = templates.get('fence-compound');
+  if (fence) templates.set('fence-compound', solidColor(fence, OLIVE));
+
+  // Base militaire : enceinte + deux hangars. C'est le PÉRIMÈTRE qui fait
+  // lire « base » — sans lui on ne voit que des entrepôts. Les hangars sont
+  // les templates de `depot`, réutilisés tels quels : rien à embarquer en plus.
+  compose('military_base', [
+    { key: 'fence-compound', scale: 1, at: [0, 0, 0] },
+    { key: 'depot-0', scale: 0.44, at: [-0.14, 0, 0.08] },
+    { key: 'depot-1', scale: 0.34, at: [0.22, 0, -0.18] },
+  ]);
 
   // Centrale nucléaire : complexe industriel + deux tours de refroidissement.
   compose('nuclear_plant', [
