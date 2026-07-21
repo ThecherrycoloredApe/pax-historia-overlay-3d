@@ -171,6 +171,8 @@ export function installOverlay(engine: PaxEngine): Overlay | null {
   let placed: Placed[] = [];
   let rafPending = false;
   let lastMetersPerPixel = 0;
+  /** Centre mercator du dernier rendu affine — sert au wrap quand la caméra est inclinée. */
+  let lastCenterMx = 0;
   let modelsEnabled = true;
   let destroyed = false;
   let visible = true;
@@ -376,66 +378,74 @@ export function installOverlay(engine: PaxEngine): Overlay | null {
     } catch {
       view = null;
     }
-    // Mode globe ou projection illisible : on se cache plutôt que d'afficher faux.
-    if (!view) {
-      canvas.style.display = 'none';
-      iconContainer.style.display = 'none';
-      return;
-    }
-    canvas.style.display = '';
-    iconContainer.style.display = '';
-
-    canvas.style.left = `${rect.left}px`;
-    canvas.style.top = `${rect.top}px`;
-    const dpr = window.devicePixelRatio || 1;
+    /**
+     * Projection non affine : caméra inclinée ou tournée (le jeu a une caméra
+     * libre depuis juillet 2026), ou mode globe. Notre caméra est
+     * ORTHOGRAPHIQUE et ne sait pas reproduire une perspective → on masque les
+     * MODÈLES 3D. Les PASTILLES, elles, restent affichées : elles sont placées
+     * par `engine.mercatorToScreen`, qui projette juste quelle que soit la
+     * projection (c'est le moteur du jeu qui calcule).
+     *
+     * Auparavant tout l'overlay se cachait, si bien qu'un simple mouvement de
+     * caméra faisait disparaître icônes ET bâtiments — alors que c'est le
+     * désencombrement de la carte qui sert le plus.
+     */
     const w = Math.round(rect.width);
     const h = Math.round(rect.height);
-    if (canvas.width !== Math.round(w * dpr) || canvas.height !== Math.round(h * dpr)) {
-      renderer.setPixelRatio(dpr);
-      renderer.setSize(w, h, true);
+    canvas.style.display = view ? '' : 'none';
+    iconContainer.style.display = '';
+
+    if (view) {
+      canvas.style.left = `${rect.left}px`;
+      canvas.style.top = `${rect.top}px`;
+      const dpr = window.devicePixelRatio || 1;
+      if (canvas.width !== Math.round(w * dpr) || canvas.height !== Math.round(h * dpr)) {
+        renderer.setPixelRatio(dpr);
+        renderer.setSize(w, h, true);
+      }
+      camera.left = view.toMercX(0);
+      camera.right = view.toMercX(w);
+      camera.top = view.toMercY(0);
+      camera.bottom = view.toMercY(h);
+      camera.updateProjectionMatrix();
+      lastMetersPerPixel = view.metersPerPixel;
+      lastCenterMx = (camera.left + camera.right) / 2;
     }
 
-    camera.left = view.toMercX(0);
-    camera.right = view.toMercX(w);
-    camera.top = view.toMercY(0);
-    camera.bottom = view.toMercY(h);
-    camera.updateProjectionMatrix();
-
-    lastMetersPerPixel = view.metersPerPixel;
-    const modelsHidden = view.metersPerPixel > HIDE_MODELS_ABOVE_METERS_PER_PX;
+    // Hors projection affine, l'échelle n'est plus mesurable : on garde la
+    // dernière connue — tourner ou incliner ne change pas le niveau de zoom.
+    const metersPerPixel = lastMetersPerPixel || 1;
+    const modelsHidden = metersPerPixel > HIDE_MODELS_ABOVE_METERS_PER_PX;
     // Pastilles : pleine taille en zoom proche, rétrécissement PROGRESSIF
     // jusqu'au plancher en vue monde (anti-entassement).
     const farT = Math.min(
       1,
       Math.max(
         0,
-        (view.metersPerPixel - HIDE_MODELS_ABOVE_METERS_PER_PX) /
+        (metersPerPixel - HIDE_MODELS_ABOVE_METERS_PER_PX) /
           (ICON_SHRINK_END_MPP - HIDE_MODELS_ABOVE_METERS_PER_PX),
       ),
     );
     const iconPx = Math.round(ICON_SIZE_PX - farT * (ICON_SIZE_PX - ICON_SIZE_MIN_PX));
-    const centerMx = (camera.left + camera.right) / 2;
-    const spanX = camera.right - camera.left;
-    const spanY = camera.top - camera.bottom;
 
     for (const p of placed) {
       // Taille ancrée au monde ; en dessous du lisible → pastille-icône.
       const worldSize = WORLD_SIZE_METERS[p.type] * (p.isConstruction ? CONSTRUCTION_SCALE : 1);
-      const worldPx = worldSize / view.metersPerPixel;
-      const show3d = modelsEnabled && !modelsHidden && worldPx >= ICON_BELOW_WORLD_PX;
+      const worldPx = worldSize / metersPerPixel;
+      const show3d = !!view && modelsEnabled && !modelsHidden && worldPx >= ICON_BELOW_WORLD_PX;
       const showIcon = !show3d;
 
       p.wrapper.visible = show3d;
       p.shadow.visible = show3d;
-      const x = wrapToNearest(p.mx, centerMx);
+      const x = wrapToNearest(p.mx, lastCenterMx);
 
       if (show3d) {
         // Bornes écran : jamais illisible (MIN), jamais envahissant (MAX).
         const sizeMeters = Math.min(
-          Math.max(worldSize, MIN_MODEL_SCREEN_PX * view.metersPerPixel),
-          MAX_SCREEN_PX * view.metersPerPixel,
+          Math.max(worldSize, MIN_MODEL_SCREEN_PX * metersPerPixel),
+          MAX_SCREEN_PX * metersPerPixel,
         );
-        p.screenSize = sizeMeters / view.metersPerPixel;
+        p.screenSize = sizeMeters / metersPerPixel;
         p.wrapper.position.set(x, p.my, 0);
         p.wrapper.scale.setScalar(sizeMeters);
         p.shadow.position.set(x, p.my, 0);
@@ -443,10 +453,31 @@ export function installOverlay(engine: PaxEngine): Overlay | null {
       }
 
       if (showIcon) {
-        const sx = ((x - camera.left) / spanX) * w;
-        const sy = ((camera.top - p.my) / spanY) * h;
-        p.icon.style.left = `${rect.left + sx}px`;
-        p.icon.style.top = `${rect.top + sy}px`;
+        // mercatorToScreen plutôt que la transformation affine : c'est la
+        // seule voie valable quand la caméra est inclinée.
+        let s: { x: number; y: number; visible?: boolean } | null = null;
+        try {
+          s = engine.mercatorToScreen(x, p.my);
+        } catch {
+          s = null;
+        }
+        // En perspective, un point peut passer derrière la caméra ou sous
+        // l'horizon : on ne pose la pastille que si elle tombe dans le cadre.
+        const onScreen =
+          !!s &&
+          s.visible !== false &&
+          isFinite(s.x) &&
+          isFinite(s.y) &&
+          s.x >= -iconPx &&
+          s.x <= w + iconPx &&
+          s.y >= -iconPx &&
+          s.y <= h + iconPx;
+        if (!onScreen) {
+          p.icon.style.display = 'none';
+          continue;
+        }
+        p.icon.style.left = `${rect.left + s!.x}px`;
+        p.icon.style.top = `${rect.top + s!.y}px`;
         p.icon.style.width = `${iconPx}px`;
         p.icon.style.height = `${iconPx}px`;
         p.icon.style.fontSize = `${Math.max(8, Math.round(iconPx * 0.54))}px`;
@@ -457,7 +488,7 @@ export function installOverlay(engine: PaxEngine): Overlay | null {
       }
     }
 
-    renderer.render(scene, camera);
+    if (view) renderer.render(scene, camera);
   };
 
   const scheduleRender = () => {
