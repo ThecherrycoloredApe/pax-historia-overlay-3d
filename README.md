@@ -8,9 +8,9 @@ Documents de référence :
 
 ## À propos de ce projet
 
-**Le code de cette extension a été écrit par [Claude Code](https://claude.com/claude-code)** (l'agent de développement en ligne de commande d'Anthropic), au fil d'un dialogue avec [@ThecherrycoloredApe](https://github.com/ThecherrycoloredApe), qui a dirigé le projet : cahier des charges, choix de conception, fourniture et sélection des modèles 3D, tests en jeu et diagnostic des pannes. L'investigation du moteur de carte, l'architecture et l'implémentation sont l'œuvre de Claude Code ; les décisions et la validation reviennent à l'auteur du dépôt.
+**Le code de cette extension a été écrit par [Claude Code](https://claude.com/claude-code)**, l'agent de développement en ligne de commande d'Anthropic. J'ai dirigé le projet — cahier des charges, choix de conception, sélection et fourniture des modèles 3D, tests en jeu et diagnostic des pannes — mais l'investigation du moteur de carte, l'architecture et l'implémentation sont son travail, pas le mien.
 
-**Pourquoi le publier ?** Le système d'icônes s'est révélé utile au-delà du simple habillage 3D. Sur une partie avancée, la carte de Pax Historia accumule les « éléments de carte » : leurs symboles et leurs libellés se superposent au point de devenir illisibles — jusqu'à une vingtaine d'entités dans une seule région. En remplaçant ces symboles par des pastilles typées, l'overlay désencombre la carte et rend chaque élément identifiable d'un coup d'œil. C'est cette lisibilité retrouvée qui a motivé la mise en ligne, au cas où elle servirait à d'autres joueurs.
+**Pourquoi je le publie ?** Le système d'icônes s'est révélé utile au-delà du simple habillage 3D. Sur une partie avancée, la carte de Pax Historia accumule les « éléments de carte » : leurs symboles et leurs libellés finissent par se superposer au point de devenir illisibles — j'ai vu jusqu'à une vingtaine d'entités dans une seule région. En remplaçant ces symboles par des pastilles typées, l'overlay désencombre la carte et rend chaque élément identifiable d'un coup d'œil. C'est cette lisibilité retrouvée qui m'a donné envie de le mettre en ligne, au cas où ça servirait à d'autres joueurs.
 
 Projet **non officiel**, sans aucune affiliation avec Pax Historia.
 
