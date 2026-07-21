@@ -8,9 +8,9 @@ Documents de référence :
 
 ## À propos
 
-J'ai fait ça avec [Claude Code](https://claude.com/claude-code) : c'est lui qui a écrit tout le code, moi j'ai surtout dit ce que je voulais, testé en jeu et signalé quand ça n'allait pas — genre quand les usines ressemblaient à des granges.
+J'ai fait ça avec [Claude Code](https://claude.com/claude-code) : c'est lui qui a écrit tout le code, et qui l'a publié sur cette page, moi j'ai surtout fait ce petit à propos, dit ce que je voulais, testé en jeu et signalé quand ça n'allait pas — genre quand les usines ressemblaient à des granges ou que les icônes ne marchaient pas sur les parties multijoueurs.
 
-Je le partage parce que je trouve que ça rend bien. Et surtout parce que sur une partie un peu avancée, la carte devient vite illisible : les symboles et les noms des « éléments de carte » se superposent, j'en ai eu une vingtaine empilés dans une seule région. Avec les pastilles, on voit enfin ce qu'il y a et où. Si ça peut servir à d'autres, tant mieux.
+Je le partage parce que je trouve que ça rend vraiment bien. Et surtout parce que sur une partie un peu avancée, la carte devient vite illisible : les symboles et les noms des « éléments de carte » se superposent, j'en ai eu une vingtaine empilés dans une seule région. Avec les pastilles, on voit enfin ce qu'il y a et où. Si ça peut servir à d'autres, tant mieux et si des personnes l'utilisent, n'hésitez pas à faire des recommandations.
 
 Projet non officiel, aucun lien avec Pax Historia.
 
