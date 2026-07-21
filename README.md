@@ -6,6 +6,14 @@ Documents de référence :
 - `brief-projet-overlay-3d-pax-historia-v2.md` — brief et plan de travail courant
 - `donnees-investigation-phase0.md` — toutes les données techniques (schémas, API du moteur de carte, pièges)
 
+## À propos de ce projet
+
+**Le code de cette extension a été écrit par [Claude Code](https://claude.com/claude-code)** (l'agent de développement en ligne de commande d'Anthropic), au fil d'un dialogue avec [@ThecherrycoloredApe](https://github.com/ThecherrycoloredApe), qui a dirigé le projet : cahier des charges, choix de conception, fourniture et sélection des modèles 3D, tests en jeu et diagnostic des pannes. L'investigation du moteur de carte, l'architecture et l'implémentation sont l'œuvre de Claude Code ; les décisions et la validation reviennent à l'auteur du dépôt.
+
+**Pourquoi le publier ?** Le système d'icônes s'est révélé utile au-delà du simple habillage 3D. Sur une partie avancée, la carte de Pax Historia accumule les « éléments de carte » : leurs symboles et leurs libellés se superposent au point de devenir illisibles — jusqu'à une vingtaine d'entités dans une seule région. En remplaçant ces symboles par des pastilles typées, l'overlay désencombre la carte et rend chaque élément identifiable d'un coup d'œil. C'est cette lisibilité retrouvée qui a motivé la mise en ligne, au cas où elle servirait à d'autres joueurs.
+
+Projet **non officiel**, sans aucune affiliation avec Pax Historia.
+
 ## Installation (mode développeur)
 
 ```bash
